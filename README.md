@@ -1,6 +1,21 @@
 # grpc-upload-file
 
+Install dependencies:
+```
+go mod tidy
+```
+
 Generate protobuf:
 ```
-protoc --proto_path=proto proto/*.proto  --go_out=:pb --go-grpc_out=:pb
+make gen
+```
+
+Run server:
+```
+make server
+```
+
+Run client:
+```
+make client
 ```
