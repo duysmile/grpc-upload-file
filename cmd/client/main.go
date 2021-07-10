@@ -1,10 +1,11 @@
-package client
+package main
 
 import (
 	"context"
 	"flag"
 	"grpcuploadfile/pb"
 	"grpcuploadfile/sample"
+	"io"
 	"log"
 	"time"
 
@@ -24,7 +25,21 @@ func main() {
 	}
 
 	laptopClient := pb.NewLaptopServiceClient(conn)
+	for i := 0; i < 10; i++ {
+		createLaptop(laptopClient)
+	}
 
+	filter := &pb.Filter{
+		MaxPriceUsd: 3000,
+		MinCpuCores: 4,
+		MinCpuGhz:   2.5,
+		MinRam:      &pb.Memory{Value: 8, Unit: pb.Memory_GIGABYTE},
+	}
+
+	searchLaptop(laptopClient, filter)
+}
+
+func createLaptop(laptopClient pb.LaptopServiceClient) {
 	laptop := sample.NewLaptop()
 	req := &pb.CreateLaptopRequest{
 		Laptop: laptop,
@@ -46,4 +61,37 @@ func main() {
 	}
 
 	log.Printf("created laptop with id: %s", res.Id)
+}
+
+func searchLaptop(laptopClient pb.LaptopServiceClient, filter *pb.Filter) {
+	log.Print("search filter", filter)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req := &pb.SearchLaptopRequest{Filter: filter}
+	stream, err := laptopClient.SearchLaptop(ctx, req)
+	if err != nil {
+		log.Fatal("cannot search laptop: ", err)
+	}
+
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			return
+		}
+
+		if err != nil {
+			log.Fatal("cannot receive response: ", err)
+		}
+
+		laptop := res.GetLaptop()
+		log.Print("- found: ", laptop.GetId())
+		log.Print("  + brand: ", laptop.GetBrand())
+		log.Print("  + name: ", laptop.GetName())
+		log.Print("  + cpu cores: ", laptop.GetCpu().GetNumberCores())
+		log.Print("  + cpu min ghz: ", laptop.GetCpu().GetMinGhz())
+		log.Print("  + ram: ", laptop.GetRam())
+		log.Print("  + price: ", laptop.GetPriceUsd())
+	}
 }
