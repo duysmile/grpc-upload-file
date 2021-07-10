@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package grpcuploadfile;
+
+option go_package = ".;pb";
+
+message ImageInfo {
+    string laptop_id = 1;
+    string image_type = 2;
+}
