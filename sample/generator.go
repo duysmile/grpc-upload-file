@@ -6,7 +6,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 )
 
-func NewKeyBoard() *pb.Keyboard {
+func NewKeyboard() *pb.Keyboard {
 	keyboard := &pb.Keyboard{
 		Layout:  randomKeyboardLayout(),
 		Backlit: randomBool(),
@@ -133,13 +133,4 @@ func NewLaptop() *pb.Laptop {
 	}
 
 	return laptop
-}
-
-func NewKeyboard() *pb.Keyboard {
-	keyboard := &pb.Keyboard{
-		Layout:  randomKeyboardLayout(),
-		Backlit: randomBool(),
-	}
-
-	return keyboard
 }
